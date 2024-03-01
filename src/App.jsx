@@ -1,11 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from "axios";
 import './App.css';
 
 function App() {
   const [pokemonData, setPokemonData] = useState(null);
+  const [selectedPokemon, setSelectedPokemon] = useState('');
+  const [pokemonDetails, setPokemonDetails] = useState(null)
   const [error, setError] = useState(null);
 
+
+  useEffect(() => {
+    if(selectedPokemon) {
+      const fetchPokemonDetails = async () => {
+        try{
+          const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${selectedPokemon}`);
+          setPokemonDetails(response.data)
+        }
+        catch (error) {
+            setError(error.message)
+          }
+        };
+        fetchPokemonDetails();
+      }
+    }, [selectedPokemon]);
+
+  
   const getRandomPokemonNumber = () => {
     return Math.floor(Math.random() * 800) + 1; // Adjust max number if API's total number of Pokemon changes
   };
@@ -30,7 +49,7 @@ function App() {
   
       // Generate an array of random, unique indices based on the pokemons array length
       let indices = [];
-      while (indices.length < 5 && indices.length < pokemons.length) {
+      while (indices.length < 6 && indices.length < pokemons.length) {
         let randIndex = Math.floor(Math.random() * pokemons.length);
         if (!indices.includes(randIndex)) {
           indices.push(randIndex);
@@ -58,6 +77,8 @@ function App() {
   };
 
   return (
+    
+    
     <div className="container">
       <h1>Pokemon Theme Team</h1>
       <button onClick={handleFetchPokemon} className="fetch-btn">GET POKEMON
@@ -66,6 +87,62 @@ function App() {
       
 
       {pokemonData && (
+        <>
+      <select value={selectedPokemon} onChange={(e) => setSelectedPokemon(e.target.value)} className="pokemon-select">
+      <option value="">Select a Pokémon</option>
+      {pokemonData.map((pokemon) => (
+        <option key={pokemon.name} value={pokemon.name}>
+          {pokemon.name.toUpperCase()}
+        </option>
+      ))}
+    </select>
+
+    {pokemonDetails  && (
+      <table className='pokemon-details'>
+        <tbody>
+          <tr>
+            <th>Name</th>
+            <td>{pokemonDetails.name.toUpperCase()}</td>
+          </tr>
+          <tr>
+            <th>Weight</th>
+            <td>{pokemonDetails.weight}</td>
+          </tr>
+          <tr>
+            <th>Height</th>
+            <td>{pokemonDetails.height}</td>
+          </tr>
+          <tr>
+            <th>HP</th>
+            <td>{pokemonDetails.stats[0].base_stat}</td>
+          </tr>
+          <tr>
+            <th>HP</th>
+            <td>{pokemonDetails.stats[0].base_stat}</td>
+          </tr>
+          <tr>
+            <th>Attack</th>
+            <td>{pokemonDetails.stats[1].base_stat}</td>
+          </tr>
+          <tr>
+            <th>Defense</th>
+            <td>{pokemonDetails.stats[2].base_stat}</td>
+          </tr>
+          <tr>
+            <th>Special Attack</th>
+            <td>{pokemonDetails.stats[3].base_stat}</td>
+          </tr>
+          <tr>
+            <th>Special Defense</th>
+            <td>{pokemonDetails.stats[4].base_stat}</td>
+          </tr>
+          <tr>
+            <th>Speed</th>
+            <td>{pokemonDetails.stats[5].base_stat}</td>
+          </tr>
+        </tbody>
+      </table>
+    )}
         <div className="pokemonImages">
           {pokemonData.map((pokemon) => (
             <div key={pokemon.name}>
@@ -74,9 +151,12 @@ function App() {
             </div>
           ))}
         </div>
+        </>
       )}
     </div>
+    
   );
 }
 
 export default App;
+
